@@ -1,0 +1,12 @@
+{
+  "name": "ensureDefaultPlan",
+  "version": "1.0.0",
+  "description": "确保用户存在默认打卡计划，并完成历史记录迁移",
+  "main": "index.js",
+  "scripts": {},
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "wx-server-sdk": "~3.0.1"
+  }
+}

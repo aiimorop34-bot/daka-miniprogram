@@ -1,0 +1,12 @@
+{
+  "name": "getPlans",
+  "version": "1.0.0",
+  "description": "获取当前用户的打卡计划列表",
+  "main": "index.js",
+  "scripts": {},
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "wx-server-sdk": "~3.0.1"
+  }
+}

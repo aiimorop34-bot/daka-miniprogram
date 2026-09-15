@@ -1,0 +1,12 @@
+{
+  "name": "getMonthDailyTotals",
+  "version": "1.0.0",
+  "description": "获取指定计划当月每日题量总和",
+  "main": "index.js",
+  "scripts": {},
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "wx-server-sdk": "~3.0.1"
+  }
+}

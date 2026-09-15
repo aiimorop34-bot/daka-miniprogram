@@ -1,0 +1,6 @@
+{
+  "navigationBarTitleText": "刷题打卡",
+  "navigationStyle": "custom",
+  "enablePullDownRefresh": true,
+  "backgroundColor": "#f7f7f7"
+}

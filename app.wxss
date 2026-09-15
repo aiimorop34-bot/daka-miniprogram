@@ -1,0 +1,24 @@
+page {
+  --color-bg: #FAFAF8;
+  --color-card: #ffffff;
+  --color-text: #1C1C1A;
+  --color-text-secondary: #8A8A85;
+  --color-text-tertiary: #c7c7cc;
+  --color-border: rgba(28,28,26,0.08);
+  --color-accent: #0F6E56;
+  --color-accent-bg: #E1F5EE;
+  --color-success: #34c759;
+  --color-danger: #A32D2D;
+  --radius-sm: 8rpx;
+  --radius-md: 12rpx;
+  --radius-lg: 16rpx;
+  --radius-card: 20rpx;
+  --shadow-sm: 0 1rpx 3rpx rgba(0, 0, 0, 0.04);
+  --shadow-md: 0 4rpx 12rpx rgba(0, 0, 0, 0.06);
+  background-color: var(--color-bg);
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC",
+    "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+  font-size: 28rpx;
+  color: var(--color-text);
+  line-height: 1.6;
+}

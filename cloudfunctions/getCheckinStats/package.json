@@ -1,0 +1,12 @@
+{
+  "name": "getCheckinStats",
+  "version": "1.0.0",
+  "description": "获取当前用户在 checkins 集合中的统计数据",
+  "main": "index.js",
+  "scripts": {},
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "wx-server-sdk": "~3.0.1"
+  }
+}

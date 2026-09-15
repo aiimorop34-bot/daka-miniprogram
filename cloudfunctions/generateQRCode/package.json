@@ -1,0 +1,9 @@
+{
+  "name": "generateQRCode",
+  "version": "1.0.0",
+  "description": "生成小程序码并上传到云存储（一次性使用）",
+  "main": "index.js",
+  "dependencies": {
+    "wx-server-sdk": "~3.0.1"
+  }
+}

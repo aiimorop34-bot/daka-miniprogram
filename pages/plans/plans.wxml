@@ -1,0 +1,119 @@
+<view class="container">
+  <view class="header">
+    <text class="title">我的计划</text>
+    <text class="subtitle">管理你的打卡计划</text>
+  </view>
+
+  <!-- 加载中 -->
+  <view wx:if="{{loading}}" class="loading-state">
+    <view class="loading-spinner"></view>
+    <text class="loading-text">计划加载中...</text>
+  </view>
+
+  <!-- 计划列表 -->
+  <block wx:else>
+    <view wx:if="{{plans.length === 0}}" class="empty-state">
+      <text class="empty-icon">📋</text>
+      <text class="empty-text">还没有打卡计划</text>
+    </view>
+
+    <view wx:else class="plan-list">
+      <view
+        wx:for="{{plans}}"
+        wx:key="_id"
+        class="plan-card {{item.isDefault ? 'plan-card-default' : ''}}"
+      >
+        <view class="plan-header">
+          <view class="plan-header-left">
+            <text class="plan-name">{{item.name}}</text>
+            <text wx:if="{{item.isDefault}}" class="plan-default-tag">默认</text>
+          </view>
+          <view class="plan-header-right">
+            <view
+              class="btn-edit"
+              data-plan="{{item}}"
+              bindtap="onShowEdit"
+            >编辑</view>
+            <view
+              class="btn-delete"
+              data-plan="{{item}}"
+              bindtap="onDelete"
+            >删除</view>
+          </view>
+        </view>
+
+        <view class="subject-list">
+          <text
+            wx:for="{{item.subjects}}"
+            wx:for-item="subject"
+            wx:key="index"
+            class="subject-tag"
+          >{{subject.name}}</text>
+        </view>
+      </view>
+    </view>
+
+  </block>
+
+  <!-- 新建/编辑弹窗 -->
+  <view wx:if="{{modalVisible}}" class="modal-mask" bindtap="onCloseModal">
+    <view class="modal-content" catchtap="onModalContentTap">
+      <view class="modal-header">
+        <text class="modal-title">{{modalTitle}}</text>
+        <view class="modal-close" bindtap="onCloseModal">×</view>
+      </view>
+
+      <view class="modal-body">
+        <view class="form-item">
+          <text class="form-label">计划名称</text>
+          <input
+            class="form-input"
+            placeholder="请输入计划名称（10字以内）"
+            maxlength="10"
+            value="{{planName}}"
+            bindinput="onPlanNameInput"
+          />
+        </view>
+
+        <view class="form-item">
+          <view class="form-label-wrap">
+            <text class="form-label">计划板块</text>
+            <text class="form-hint">至少1个，最多20个</text>
+          </view>
+
+          <view
+            wx:for="{{subjects}}"
+            wx:key="index"
+            class="subject-input-row"
+          >
+            <input
+              class="form-input subject-input"
+              placeholder="板块名称（10字以内）"
+              maxlength="10"
+              data-index="{{index}}"
+              value="{{item}}"
+              bindinput="onSubjectInput"
+            />
+            <button
+              class="subject-delete-btn"
+              data-index="{{index}}"
+              bindtap="onRemoveSubject"
+            >删除</button>
+          </view>
+
+          <button class="add-subject-btn" bindtap="onAddSubject">+ 添加板块</button>
+        </view>
+      </view>
+
+      <view class="modal-footer">
+        <button class="modal-btn modal-btn-cancel" bindtap="onCloseModal">取消</button>
+        <button
+          class="modal-btn modal-btn-confirm"
+          loading="{{saving}}"
+          disabled="{{saving}}"
+          bindtap="onSave"
+        >{{saving ? '保存中...' : '保存'}}</button>
+      </view>
+    </view>
+  </view>
+</view>

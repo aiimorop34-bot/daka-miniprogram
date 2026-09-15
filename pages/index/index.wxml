@@ -1,0 +1,169 @@
+<view class="container">
+  <!-- 加载状态 -->
+  <view wx:if="{{loading}}" class="loading-state">
+    <view class="loading-spinner"></view>
+    <text class="loading-text">数据加载中...</text>
+  </view>
+
+  <!-- 错误状态 -->
+  <view wx:elif="{{errorMsg}}" class="error-state">
+    <text class="error-icon">⚠️</text>
+    <text class="error-text">{{errorMsg}}</text>
+    <button class="retry-btn" bindtap="loadData">重新加载</button>
+  </view>
+
+  <!-- 主内容 -->
+  <block wx:else>
+    <!-- 顶部标题 -->
+    <view class="header">
+      <view class="header-left">
+        <text class="title">刷题打卡</text>
+        <text class="subtitle">保持节奏，每天进步</text>
+      </view>
+      <view
+        wx:if="{{pendingCount > 0 || failedCount > 0}}"
+        class="sync-indicator {{failedCount > 0 ? 'sync-failed' : ''}}"
+        bindtap="onSyncIndicatorTap"
+      >
+        <view wx:if="{{failedCount === 0}}" class="sync-dot"></view>
+        <text class="sync-text">
+          {{failedCount > 0 ? '同步失败 ' + failedCount : '同步中 ' + pendingCount}}
+        </text>
+      </view>
+      <view
+        class="manage-plans-btn"
+        bindtap="onGoToPlans"
+        hover-class="manage-plans-btn-hover"
+      >
+        <text class="manage-plans-text">管理计划</text>
+      </view>
+    </view>
+
+    <!-- 空状态 -->
+    <view wx:if="{{plans.length === 0}}" class="empty-state">
+      <text class="empty-icon">📋</text>
+      <text class="empty-title">还没有打卡计划</text>
+      <text class="empty-desc">点击下方按钮创建你的第一个计划</text>
+      <button class="empty-btn" bindtap="onGoToPlans">去创建计划</button>
+    </view>
+
+    <!-- 计划卡片列表 -->
+    <view wx:else class="plan-list">
+      <view
+        wx:for="{{plans}}"
+        wx:key="_id"
+        class="plan-card {{item.checkedInToday ? 'done' : ''}}"
+      >
+        <view class="plan-card-header">
+          <view class="plan-card-left">
+            <text class="plan-card-name">{{item.name}}</text>
+            <text wx:if="{{item.isDefault}}" class="plan-card-tag">默认</text>
+          </view>
+          <view class="plan-card-status">
+            <view class="status-dot {{item.checkedInToday ? 'done' : ''}}"></view>
+            <text class="status-text">{{item.checkedInToday ? '今日已完成' : '今日未打卡'}}</text>
+          </view>
+        </view>
+
+        <view class="plan-stats">
+          <view class="plan-stat">
+            <text class="plan-stat-value">{{item.streak}}</text>
+            <text class="plan-stat-label">连续天数</text>
+          </view>
+          <view class="plan-stat">
+            <text class="plan-stat-value">{{item.weekCount}}</text>
+            <text class="plan-stat-label">本周打卡</text>
+          </view>
+          <view class="plan-stat">
+            <text class="plan-stat-value">{{item.totalDays}}</text>
+            <text class="plan-stat-label">累计天数</text>
+          </view>
+        </view>
+
+        <view wx:if="{{item.checkedInToday && item.todaySummary}}" class="plan-summary">
+          <text>{{item.todaySummary}}</text>
+        </view>
+
+        <view wx:if="{{item.evaluation}}" class="plan-evaluation">
+          <text class="evaluation-icon">{{item.evaluation.emoji || '👀'}}</text>
+          <text class="evaluation-text">{{item.evaluation.text}}</text>
+        </view>
+
+        <view class="card-actions">
+          <view class="card-action-group">
+            <view
+              class="card-action-link"
+              data-plan-id="{{item._id}}"
+              bindtap="onViewData"
+              hover-class="card-action-link-hover"
+            >查看数据</view>
+            <view
+              class="card-action-link"
+              data-plan-id="{{item._id}}"
+              bindtap="toggleCalendar"
+              hover-class="card-action-link-hover"
+            >{{calendarState[item._id].expanded ? '收起月历' : '查看月历'}}</view>
+          </view>
+          <button
+            class="checkin-btn {{item.checkedInToday ? 'outline' : ''}}"
+            data-plan-id="{{item._id}}"
+            bindtap="onCheckin"
+          >{{item.checkedInToday ? '补充记录' : '开始打卡'}}</button>
+        </view>
+
+        <!-- 可折叠月历视图 -->
+        <view wx:if="{{calendarState[item._id].expanded}}" class="calendar-section">
+          <view class="calendar-header">
+            <view
+              class="calendar-arrow {{calendarState[item._id].prevDisabled ? 'disabled' : ''}}"
+              data-plan-id="{{item._id}}"
+              bindtap="goToPrevMonth"
+            >‹</view>
+            <text class="calendar-month">{{calendarState[item._id].monthText}}</text>
+            <view
+              class="calendar-arrow {{calendarState[item._id].nextDisabled ? 'disabled' : ''}}"
+              data-plan-id="{{item._id}}"
+              bindtap="goToNextMonth"
+            >›</view>
+          </view>
+
+          <view wx:if="{{calendarState[item._id].loading}}" class="calendar-loading">
+            <view class="loading-spinner small"></view>
+            <text class="calendar-loading-text">加载中...</text>
+          </view>
+
+          <view wx:elif="{{calendarState[item._id].error}}" class="calendar-error">
+            <text>{{calendarState[item._id].error}}</text>
+          </view>
+
+          <block wx:else>
+            <view class="calendar-weekdays">
+              <text wx:for="{{['一','二','三','四','五','六','日']}}" wx:for-item="wd" wx:key="*this" class="calendar-weekday">{{wd}}</text>
+            </view>
+            <view class="calendar-days">
+              <view
+                wx:for="{{calendarState[item._id].days}}"
+                wx:for-item="day"
+                wx:key="index"
+                class="calendar-day {{day.day ? '' : 'empty'}} {{day.questions ? 'has-data' : ''}} {{day.isFuture ? 'future' : ''}}"
+              >
+                <text class="calendar-day-number">{{day.day || ''}}</text>
+                <text class="calendar-day-count">{{day.questions}}</text>
+              </view>
+            </view>
+          </block>
+        </view>
+      </view>
+
+      <view
+        class="create-plan-card"
+        bindtap="onCreatePlan"
+        hover-class="create-plan-card-hover"
+      >
+        <text class="create-plan-icon">+</text>
+        <text class="create-plan-text">新建计划</text>
+      </view>
+    </view>
+
+  </block>
+</view>

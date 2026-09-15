@@ -1,0 +1,55 @@
+<view class="page">
+  <!-- 排序切换 -->
+  <view class="sort-bar">
+    <view
+      wx:for="{{sortOptions}}"
+      wx:key="key"
+      class="sort-item {{sortBy === item.key ? 'active' : ''}}"
+      data-key="{{item.key}}"
+      bindtap="onSortChange"
+    >{{item.label}}</view>
+  </view>
+
+  <!-- 加载中 -->
+  <view wx:if="{{isLoading}}" class="loading">
+    <text class="loading-text">加载中...</text>
+  </view>
+
+  <!-- 无伙伴 -->
+  <view wx:elif="{{!hasPartners}}" class="empty-card">
+    <text class="empty-emoji">🏔️</text>
+    <text class="empty-title">还没有学习伙伴</text>
+    <text class="empty-desc">添加伙伴后，这里会显示你们的刷题排名</text>
+    <button class="empty-btn" bindtap="onAddPartner">添加学习伙伴</button>
+  </view>
+
+  <!-- 排行榜 -->
+  <view wx:else class="rank-list">
+    <view
+      wx:for="{{list}}"
+      wx:key="openid"
+      class="rank-item {{item.openid === myOpenid ? 'me' : ''}}"
+    >
+      <text class="rank-number {{item.rank <= 3 ? 'top' : ''}}">{{item.rank}}</text>
+
+      <image
+        wx:if="{{item.avatarUrl}}"
+        class="rank-avatar"
+        src="{{item.avatarUrl}}"
+        mode="aspectFill"
+      />
+      <view wx:else class="rank-avatar rank-avatar-placeholder">{{item.nickname ? item.nickname[0] : '?'}}</view>
+
+      <view class="rank-info">
+        <text class="rank-name">{{item.nickname || '未填写昵称'}}</text>
+        <text wx:if="{{item.openid === myOpenid}}" class="rank-tag">我</text>
+      </view>
+
+      <view class="rank-value">
+        <text wx:if="{{sortBy === 'weekTotal'}}" class="value-num">{{item.weekTotal || 0}}题</text>
+        <text wx:if="{{sortBy === 'weekAccuracy'}}" class="value-num">{{item.weekAccuracy || 0}}%</text>
+        <text wx:if="{{sortBy === 'streak'}}" class="value-num">{{item.streak || 0}}天</text>
+      </view>
+    </view>
+  </view>
+</view>

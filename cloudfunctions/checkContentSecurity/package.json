@@ -1,0 +1,12 @@
+{
+  "name": "checkContentSecurity",
+  "version": "1.0.0",
+  "description": "统一内容安全检测：昵称文本、头像图片",
+  "main": "index.js",
+  "scripts": {},
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "wx-server-sdk": "~3.0.1"
+  }
+}

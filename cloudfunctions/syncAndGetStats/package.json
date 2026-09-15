@@ -1,0 +1,9 @@
+{
+  "name": "syncAndGetStats",
+  "version": "1.0.0",
+  "description": "同步用户数据并返回伙伴榜数据",
+  "main": "index.js",
+  "dependencies": {
+    "wx-server-sdk": "^2.6.3"
+  }
+}

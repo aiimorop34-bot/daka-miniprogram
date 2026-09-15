@@ -1,0 +1,112 @@
+<view class="page">
+  <!-- 用户信息 -->
+  <view class="profile-card">
+    <button
+      class="avatar-btn"
+      open-type="chooseAvatar"
+      bind:chooseavatar="onChooseAvatar"
+      disabled="{{isUploadingAvatar}}"
+    >
+      <image
+        wx:if="{{userInfo.avatarUrl && !isUploadingAvatar}}"
+        class="avatar"
+        src="{{userInfo.avatarUrl}}"
+        mode="aspectFill"
+      />
+      <view wx:elif="{{isUploadingAvatar}}" class="avatar avatar-uploading">上传中</view>
+      <view wx:else class="avatar avatar-placeholder">?</view>
+    </button>
+
+    <view class="nickname-wrap">
+      <input
+        type="nickname"
+        class="nickname-input"
+        placeholder="点击填写昵称"
+        value="{{userInfo.nickname}}"
+        bind:input="onNicknameInput"
+      />
+    </view>
+    <text class="profile-tip">头像和昵称将展示给学习伙伴</text>
+
+    <button
+      class="save-btn {{hasChanges ? 'save-btn-active' : 'save-btn-inactive'}}"
+      bindtap="onSaveProfile"
+      loading="{{isSaving}}"
+      disabled="{{isSaving || !hasChanges}}"
+    >{{isSaving ? '保存中' : '保存资料'}}</button>
+  </view>
+
+  <!-- 邀请码 -->
+  <view class="invite-card" bindtap="onCopyCode">
+    <view class="invite-header">
+      <text class="invite-title">我的邀请码</text>
+      <text class="invite-hint">点击复制</text>
+    </view>
+    <view class="invite-code">
+      <text wx:for="{{inviteCode}}" wx:key="index" class="invite-char">{{item}}</text>
+    </view>
+    <text class="invite-desc">把邀请码发给朋友，互相查看学习数据</text>
+  </view>
+
+  <!-- 打卡提醒 -->
+  <view class="reminder-card">
+    <view class="reminder-info">
+      <text class="reminder-title">每日打卡提醒</text>
+      <text class="reminder-desc">
+        {{reminder ? '已开启 ' + reminder.remindTime + ' 提醒' : '还没开启每日提醒'}}
+      </text>
+    </view>
+    <button
+      class="reminder-btn {{reminder ? 'reminder-btn-active' : ''}}"
+      bindtap="onToggleReminder"
+      loading="{{isTogglingReminder}}"
+      disabled="{{isTogglingReminder}}"
+    >{{isTogglingReminder ? '处理中' : (reminder ? '取消提醒' : '开启提醒')}}</button>
+  </view>
+
+  <!-- 学习伙伴 -->
+  <view class="section-header">
+    <text class="section-title">学习伙伴</text>
+    <text class="section-count" wx:if="{{partners.length > 0}}">{{partners.length}}人</text>
+  </view>
+
+  <view wx:if="{{partners.length === 0}}" class="empty-card">
+    <text class="empty-emoji">🤝</text>
+    <text class="empty-title">还没有学习伙伴</text>
+    <text class="empty-desc">添加伙伴后，可以互相查看本周刷题排名</text>
+    <button class="empty-btn" bindtap="onAddPartner">添加学习伙伴</button>
+  </view>
+
+  <view wx:else class="partner-list">
+    <view
+      wx:for="{{partners}}"
+      wx:key="partnerOpenid"
+      class="partner-item"
+      data-openid="{{item.partnerOpenid}}"
+      bindtap="onToggleRemove"
+    >
+      <image
+        wx:if="{{item.avatarUrl}}"
+        class="partner-avatar"
+        src="{{item.avatarUrl}}"
+        mode="aspectFill"
+      />
+      <view wx:else class="partner-avatar partner-avatar-placeholder">{{item.nickname ? item.nickname[0] : '?'}}</view>
+      <text class="partner-name">{{item.nickname || '未填写昵称'}}</text>
+
+      <view wx:if="{{showRemoveId === item.partnerOpenid}}" class="remove-btn-wrap">
+        <button
+          class="remove-btn"
+          data-openid="{{item.partnerOpenid}}"
+          catchtap="onRemovePartner"
+        >移除</button>
+      </view>
+    </view>
+  </view>
+
+  <!-- 底部入口 -->
+  <view wx:if="{{partners.length > 0}}" class="action-area">
+    <button class="primary-btn" bindtap="onViewRank">查看伙伴榜</button>
+    <button class="secondary-btn" bindtap="onAddPartner">添加更多伙伴</button>
+  </view>
+</view>

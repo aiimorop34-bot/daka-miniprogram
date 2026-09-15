@@ -1,0 +1,12 @@
+{
+  "name": "deleteCheckin",
+  "version": "1.0.0",
+  "description": "删除单条打卡记录并重新计算计划统计",
+  "main": "index.js",
+  "scripts": {},
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "wx-server-sdk": "~3.0.1"
+  }
+}

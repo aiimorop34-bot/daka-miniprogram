@@ -1,0 +1,144 @@
+<view class="page">
+  <!-- 同步状态提示 -->
+  <view
+    wx:if="{{pendingCount > 0 || failedCount > 0}}"
+    class="sync-indicator {{failedCount > 0 ? 'sync-failed' : ''}}"
+    bindtap="onSyncIndicatorTap"
+  >
+    <view wx:if="{{failedCount === 0}}" class="sync-dot"></view>
+    <text class="sync-text">
+      {{failedCount > 0 ? '有' + failedCount + '条记录同步失败，点击查看' : '数据同步中 ' + pendingCount}}
+    </text>
+  </view>
+
+  <!-- 页面标题：当前计划 -->
+  <view class="page-header">
+    <text class="page-title">{{planName || '打卡记录'}}</text>
+    <text class="page-subtitle">为当前计划记录今日刷题数据</text>
+  </view>
+
+  <!-- 板块选择 -->
+  <view class="section">
+    <view class="section-header">
+      <text class="section-title">选择板块</text>
+      <text class="section-hint">点击选择今天练习的板块</text>
+      <view class="plan-tag">
+        <text class="plan-tag-label">当前记录</text>
+        <text class="plan-tag-name">{{planName || '-'}}</text>
+      </view>
+    </view>
+
+    <view class="subject-grid">
+      <view
+        wx:for="{{subjects}}"
+        wx:key="index"
+        class="subject-tag {{item.selected ? 'selected' : ''}}"
+        data-index="{{index}}"
+        bindtap="onToggleSubject"
+      >
+        <text>{{item.label}}</text>
+      </view>
+    </view>
+  </view>
+
+  <!-- 已选板块的输入区 -->
+  <view class="section" wx:if="{{hasSelected}}">
+    <view class="section-header">
+      <text class="section-title">填写数据</text>
+    </view>
+
+    <view
+      wx:for="{{subjects}}"
+      wx:key="key"
+      wx:if="{{item.selected}}"
+    >
+      <view class="input-card">
+        <view class="input-card-header">
+          <text class="input-card-title">{{item.label}}</text>
+        </view>
+        <view class="input-row">
+          <view class="input-group">
+            <text class="input-label">做题数量</text>
+            <view class="input-with-picker">
+              <input
+                class="input-field"
+                type="number"
+                placeholder="0"
+                value="{{item.total}}"
+                data-index="{{index}}"
+                bindinput="onTotalInput"
+              />
+              <picker
+                mode="selector"
+                range="{{numberOptions}}"
+                data-index="{{index}}"
+                data-field="total"
+                bindchange="onPickerChange"
+                class="picker-trigger"
+              >
+                <view class="picker-btn">
+                  <text class="picker-btn-icon">⇅</text>
+                </view>
+              </picker>
+            </view>
+          </view>
+          <view class="input-divider"></view>
+          <view class="input-group">
+            <text class="input-label">正确数量</text>
+            <view class="input-with-picker">
+              <input
+                class="input-field"
+                type="number"
+                placeholder="0"
+                value="{{item.correct}}"
+                data-index="{{index}}"
+                bindinput="onCorrectInput"
+              />
+              <picker
+                mode="selector"
+                range="{{numberOptions}}"
+                data-index="{{index}}"
+                data-field="correct"
+                bindchange="onPickerChange"
+                class="picker-trigger"
+              >
+                <view class="picker-btn">
+                  <text class="picker-btn-icon">⇅</text>
+                </view>
+              </picker>
+            </view>
+          </view>
+        </view>
+
+        <!-- 实时正确率 -->
+        <view wx:if="{{item.total > 0}}" class="accuracy-preview">
+          <text class="accuracy-text {{item.accuracyClass}}">正确率 {{item.accuracy}}%</text>
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 保存按钮 -->
+  <view class="save-area">
+    <button class="save-btn" bindtap="onSave" loading="{{saving}}" disabled="{{saving}}">
+      {{saving ? '保存中...' : '保存记录'}}
+    </button>
+  </view>
+
+  <!-- 评语弹窗 -->
+  <view wx:if="{{showEvaluation}}" class="eval-mask" bindtap="onEvalClose">
+    <view class="eval-card" catchtap="">
+      <view class="eval-header">
+        <text class="eval-check">✓ 打卡成功</text>
+      </view>
+      <view class="eval-emoji">{{evalEmoji}}</view>
+      <text class="eval-text">{{evalText}}</text>
+      <button wx:if="{{showReminderButton}}" class="eval-reminder-btn" bindtap="onEnableReminder">
+        开启明日 21:00 提醒
+      </button>
+      <button class="eval-close-btn" bindtap="onEvalClose">
+        {{showReminderButton ? '先不用' : '好的'}}
+      </button>
+    </view>
+  </view>
+</view>

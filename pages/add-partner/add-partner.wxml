@@ -1,0 +1,33 @@
+<view class="page">
+  <!-- 我的邀请码 -->
+  <view class="section-title">我的邀请码</view>
+  <view class="code-card" bindtap="onCopyCode">
+    <view class="code-display">
+      <text wx:for="{{inviteCode}}" wx:key="index" class="code-char">{{item}}</text>
+    </view>
+    <text class="code-tip">点击复制，发给朋友</text>
+  </view>
+
+  <button class="share-btn" open-type="share">分享给朋友</button>
+
+  <!-- 输入他人邀请码 -->
+  <view class="section-title">输入朋友的邀请码</view>
+  <view class="input-card">
+    <input
+      class="code-input"
+      type="text"
+      maxlength="6"
+      placeholder="请输入6位邀请码"
+      value="{{inputCode}}"
+      bind:input="onCodeInput"
+    />
+  </view>
+
+  <button class="add-btn" bindtap="onAddPartner" loading="{{isAdding}}" disabled="{{isAdding}}">
+    {{isAdding ? '添加中...' : '添加为学习伙伴'}}
+  </button>
+
+  <view class="hint">
+    <text class="hint-text">添加后，双方将互相可见本周刷题数据和排名</text>
+  </view>
+</view>

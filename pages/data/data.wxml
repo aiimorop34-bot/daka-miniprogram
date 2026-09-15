@@ -1,0 +1,236 @@
+<view class="page">
+  <!-- 同步状态提示 -->
+  <view
+    wx:if="{{pendingCount > 0 || failedCount > 0}}"
+    class="sync-indicator {{failedCount > 0 ? 'sync-failed' : ''}}"
+    bindtap="onSyncIndicatorTap"
+  >
+    <view wx:if="{{failedCount === 0}}" class="sync-dot"></view>
+    <text class="sync-text">
+      {{failedCount > 0 ? '有' + failedCount + '条记录同步失败，点击查看' : '数据同步中 ' + pendingCount}}
+    </text>
+  </view>
+
+  <!-- 计划切换器 -->
+  <scroll-view
+    wx:if="{{plans.length > 0}}"
+    class="plan-tabs"
+    scroll-x
+    scroll-with-animation
+    show-scrollbar="{{false}}"
+  >
+    <view
+      wx:for="{{plans}}"
+      wx:key="_id"
+      class="plan-tab {{selectedPlanId === item._id ? 'active' : ''}}"
+      data-plan-id="{{item._id}}"
+      bindtap="onPlanChange"
+    >
+      <text class="plan-tab-name">{{item.name}}</text>
+      <text wx:if="{{item.isDefault}}" class="plan-tab-badge">默认</text>
+    </view>
+  </scroll-view>
+
+  <!-- 加载状态 -->
+  <view wx:if="{{isLoading}}" class="loading">
+    <view class="loading-spinner"></view>
+    <text class="loading-text">数据加载中...</text>
+  </view>
+
+  <!-- 空状态 -->
+  <view wx:elif="{{records.length === 0}}" class="empty">
+    <text class="empty-icon">📊</text>
+    <text class="empty-title">暂无打卡记录</text>
+    <text class="empty-desc">{{currentPlanName ? '在「' + currentPlanName + '」计划下完成打卡后，数据会显示在这里' : '完成打卡后，数据会显示在这里'}}</text>
+  </view>
+
+  <!-- 有数据时 -->
+  <view wx:else>
+    <!-- 分享海报按钮 -->
+    <view class="share-btn" bindtap="onSharePoster">
+      <text class="share-btn-text">{{posterSaving ? '生成中...' : '生成「' + currentPlanName + '」分享海报'}}</text>
+    </view>
+
+    <!-- 隐藏海报画布 -->
+    <canvas
+      type="2d"
+      id="posterCanvas"
+      class="poster-canvas"
+    ></canvas>
+
+    <!-- 热力图 -->
+    <view class="chart-card">
+      <view class="chart-header">
+        <text class="chart-title">打卡热力图</text>
+        <text class="chart-subtitle">{{heatmapStatsText}}</text>
+      </view>
+      <canvas
+        type="2d"
+        id="heatmapCanvas"
+        class="heatmap-canvas"
+        bindtap="onHeatmapTap"
+      ></canvas>
+      <view wx:if="{{selectedDateText}}" class="heatmap-detail">
+        <text class="heatmap-detail-text">{{selectedDateText}}</text>
+      </view>
+    </view>
+
+    <!-- 雷达图 -->
+    <view class="chart-card">
+      <view class="chart-header">
+        <text class="chart-title">板块能力分布</text>
+        <text class="chart-subtitle">各板块历史平均正确率</text>
+      </view>
+      <canvas
+        type="2d"
+        id="radarCanvas"
+        class="radar-canvas"
+      ></canvas>
+      <view wx:if="{{radarNoDataText}}" class="radar-note">
+        <text class="radar-note-text">{{radarNoDataText}}</text>
+      </view>
+    </view>
+
+    <!-- 正确率趋势折线图 -->
+    <view class="chart-card">
+      <view class="chart-header">
+        <text class="chart-title">正确率趋势</text>
+        <text class="chart-subtitle">最近30天每日综合正确率</text>
+      </view>
+      <canvas
+        type="2d"
+        id="trendCanvas"
+        class="trend-canvas"
+      ></canvas>
+      <view wx:if="{{trendHintText}}" class="trend-hint">
+        <text class="trend-hint-text">{{trendHintText}}</text>
+      </view>
+    </view>
+
+    <!-- 自我对比 -->
+    <view class="chart-card compare-card">
+      <view class="chart-header">
+        <text class="chart-title">自我对比</text>
+        <text class="chart-subtitle">看看这一周期进步了多少</text>
+      </view>
+
+      <!-- 切换标签 -->
+      <view class="compare-tabs">
+        <view
+          class="compare-tab {{compareActiveTab === 'day' ? 'active' : ''}}"
+          data-tab="day"
+          bindtap="onCompareTabChange"
+        >今日 / 昨日</view>
+        <view
+          class="compare-tab {{compareActiveTab === 'week' ? 'active' : ''}}"
+          data-tab="week"
+          bindtap="onCompareTabChange"
+        >本周 / 上周</view>
+        <view
+          class="compare-tab {{compareActiveTab === 'month' ? 'active' : ''}}"
+          data-tab="month"
+          bindtap="onCompareTabChange"
+        >本月 / 上月</view>
+      </view>
+
+      <!-- 数据不足提示 -->
+      <view wx:if="{{!compareData[compareActiveTab].enough}}" class="compare-empty">
+        <text class="compare-empty-text">{{compareData[compareActiveTab].emptyText}}</text>
+      </view>
+
+      <!-- 对比内容 -->
+      <view wx:else class="compare-content">
+        <!-- 总做题量 -->
+        <view class="compare-row">
+          <view class="compare-side">
+            <text class="compare-value">{{compareData[compareActiveTab].previous.total}}</text>
+            <text class="compare-label">{{compareData[compareActiveTab].previousLabel}}题量</text>
+          </view>
+          <view class="compare-change {{compareData[compareActiveTab].questionDiff > 0 ? 'up' : compareData[compareActiveTab].questionDiff < 0 ? 'down' : 'flat'}}">
+            <text class="compare-arrow">{{compareData[compareActiveTab].questionDiff > 0 ? '↑' : compareData[compareActiveTab].questionDiff < 0 ? '↓' : '—'}}</text>
+            <text class="compare-diff">{{compareData[compareActiveTab].questionDiff > 0 ? '+' : ''}}{{compareData[compareActiveTab].questionDiff}}题</text>
+          </view>
+          <view class="compare-side">
+            <text class="compare-value">{{compareData[compareActiveTab].current.total}}</text>
+            <text class="compare-label">{{compareData[compareActiveTab].currentLabel}}题量</text>
+          </view>
+        </view>
+
+        <!-- 综合正确率 -->
+        <view class="compare-row">
+          <view class="compare-side">
+            <text class="compare-value">{{compareData[compareActiveTab].previous.accuracy}}%</text>
+            <text class="compare-label">{{compareData[compareActiveTab].previousLabel}}正确率</text>
+          </view>
+          <view class="compare-change {{compareData[compareActiveTab].accuracyDiff > 0 ? 'up' : compareData[compareActiveTab].accuracyDiff < 0 ? 'down' : 'flat'}}">
+            <text class="compare-arrow">{{compareData[compareActiveTab].accuracyDiff > 0 ? '↑' : compareData[compareActiveTab].accuracyDiff < 0 ? '↓' : '—'}}</text>
+            <text class="compare-diff">{{compareData[compareActiveTab].accuracyDiff > 0 ? '+' : ''}}{{compareData[compareActiveTab].accuracyDiff}}个百分点</text>
+          </view>
+          <view class="compare-side">
+            <text class="compare-value">{{compareData[compareActiveTab].current.accuracy}}%</text>
+            <text class="compare-label">{{compareData[compareActiveTab].currentLabel}}正确率</text>
+          </view>
+        </view>
+
+        <!-- 打卡天数（本周/本月显示） -->
+        <view wx:if="{{compareActiveTab !== 'day'}}" class="compare-row">
+          <view class="compare-side">
+            <text class="compare-value">{{compareData[compareActiveTab].previous.days}}天</text>
+            <text class="compare-label">{{compareData[compareActiveTab].previousLabel}}打卡</text>
+          </view>
+          <view class="compare-change {{compareData[compareActiveTab].current.days - compareData[compareActiveTab].previous.days > 0 ? 'up' : compareData[compareActiveTab].current.days - compareData[compareActiveTab].previous.days < 0 ? 'down' : 'flat'}}">
+            <text class="compare-arrow">{{compareData[compareActiveTab].current.days - compareData[compareActiveTab].previous.days > 0 ? '↑' : compareData[compareActiveTab].current.days - compareData[compareActiveTab].previous.days < 0 ? '↓' : '—'}}</text>
+            <text class="compare-diff">{{compareData[compareActiveTab].current.days - compareData[compareActiveTab].previous.days > 0 ? '+' : ''}}{{compareData[compareActiveTab].current.days - compareData[compareActiveTab].previous.days}}天</text>
+          </view>
+          <view class="compare-side">
+            <text class="compare-value">{{compareData[compareActiveTab].current.days}}天</text>
+            <text class="compare-label">{{compareData[compareActiveTab].currentLabel}}打卡</text>
+          </view>
+        </view>
+
+        <!-- 总结文案 -->
+        <view class="compare-eval">
+          <text class="compare-eval-emoji">{{compareData[compareActiveTab].evalText.emoji}}</text>
+          <text class="compare-eval-text">{{compareData[compareActiveTab].evalText.text}}</text>
+        </view>
+      </view>
+    </view>
+
+    <!-- 记录列表 -->
+    <view class="record-list">
+      <view wx:for="{{records}}" wx:key="id" class="record-card">
+        <!-- 日期头部 -->
+        <view class="record-top-row">
+          <text class="record-date">{{item.dateDisplay}}</text>
+          <view class="record-delete-btn" data-record="{{item}}" catchtap="onDeleteRecord">删除</view>
+        </view>
+        <view class="record-meta-row">
+          <text class="record-meta-text">{{item.subjects.length}}个板块 · {{item.totalQuestions}}题</text>
+          <text class="record-accuracy {{item.overallAccuracy >= 60 ? 'high' : item.overallAccuracy >= 40 ? 'mid' : 'low'}}">{{item.overallAccuracy}}%</text>
+        </view>
+
+        <!-- 进度条 -->
+        <view class="progress-bar">
+          <view
+            class="progress-fill {{item.overallAccuracy >= 60 ? 'high' : item.overallAccuracy >= 40 ? 'mid' : 'low'}}"
+            style="width: {{item.overallAccuracy}}%"
+          ></view>
+        </view>
+
+        <!-- 板块明细 -->
+        <view class="subject-list">
+          <view wx:for="{{item.subjects}}" wx:for-item="sub" wx:key="name" class="subject-row">
+            <text class="subject-name">{{sub.name}}</text>
+            <text class="subject-count">{{sub.correct}}/{{sub.total}}</text>
+            <text class="subject-accuracy {{sub.accuracy >= 60 ? 'high' : sub.accuracy >= 40 ? 'mid' : 'low'}}">
+              {{sub.accuracy}}%
+            </text>
+          </view>
+        </view>
+      </view>
+
+      <!-- 底部留白 -->
+      <view class="bottom-spacer"></view>
+    </view>
+  </view>
+</view>
